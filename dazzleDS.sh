@@ -27,6 +27,7 @@ HOSTNAME=`grep '' /etc/hostname`
 DAZZLE_USER="${DAZZLE_USER:-storage}"
 DAZZLE_GROUP="${DAZZLE_GROUP:-users}"
 DAZZLE_HOME="${DAZZLE_HOME:-/var/services/homes/$DAZZLE_USER}"
+DAZZLE_STORAGE="${DAZZLE_STORAGE:-/var/services/homes/$DAZZLE_USER}"
 DAZZLE_HOST="${DAZZLE_HOST:-$HOSTNAME}"
 
 show_help () {
@@ -73,33 +74,33 @@ configure_ssh () {
 }
 
 create_project () {
-  if [ -f "$DAZZLE_HOME/$1/HEAD" ]; then
+  if [ -f "$DAZZLE_STORAGE/$1/HEAD" ]; then
     echo "  -> Project \"$1\" already exists."
     echo
   else
     # Create the Git repository
-    echo "  -> $GIT init --bare $DAZZLE_HOME/$1"
-    $GIT init --quiet --bare "$DAZZLE_HOME/$1"
+    echo "  -> $GIT init --bare $DAZZLE_STORAGE/$1"
+    $GIT init --quiet --bare "$DAZZLE_STORAGE/$1"
 
     # Don't allow force-pushing and data to get lost
-    echo "  -> $GIT config --file $DAZZLE_HOME/$1/config receive.denyNonFastForwards true"
-    $GIT config --file "$DAZZLE_HOME/$1/config" receive.denyNonFastForwards true
+    echo "  -> $GIT config --file $DAZZLE_STORAGE/$1/config receive.denyNonFastForwards true"
+    $GIT config --file "$DAZZLE_STORAGE/$1/config" receive.denyNonFastForwards true
 
     # Add list of files that Git should not compress
     EXTENSIONS="jpg jpeg png tiff gif flac mp3 ogg oga avi mov mpg mpeg mkv ogv ogx webm zip gz bz bz2 rpm deb tgz rar ace 7z pak iso dmg JPG JPEG PNG TIFF GIF FLAC MP3 OGG OGA AVI MOV MPG MPEG MKV OGV OGX WEBM ZIP GZ BZ BZ2 RPM DEB TGZ RAR ACE 7Z PAK ISO DMG"
     for EXTENSION in $EXTENSIONS; do
-      echo -ne "  -> echo \"*.$EXTENSION -delta\" >> $DAZZLE_HOME/$1/info/attributes      \r"
-      echo "*.$EXTENSION -delta" >> "$DAZZLE_HOME/$1/info/attributes"
+      echo -ne "  -> echo \"*.$EXTENSION -delta\" >> $DAZZLE_STORAGE/$1/info/attributes      \r"
+      echo "*.$EXTENSION -delta" >> "$DAZZLE_STORAGE/$1/info/attributes"
     done
 
     echo ""
 
     # Set the right permissions
-    echo "  -> chown --recursive $DAZZLE_USER:$DAZZLE_GROUP $DAZZLE_HOME"
-    chown -R $DAZZLE_USER:$DAZZLE_GROUP "$DAZZLE_HOME"
+    echo "  -> chown --recursive $DAZZLE_USER:$DAZZLE_GROUP $DAZZLE_STORAGE"
+    chown -R $DAZZLE_USER:$DAZZLE_GROUP "$DAZZLE_STORAGE"
 
-    echo "  -> chmod --recursive o-rwx $DAZZLE_HOME/$1"
-    chmod -R o-rwx "$DAZZLE_HOME"/"$1"
+    echo "  -> chmod --recursive o-rwx $DAZZLE_STORAGE/$1"
+    chmod -R o-rwx "$DAZZLE_STORAGE"/"$1"
 
     echo
     echo "Project \"$1\" was successfully created."
@@ -113,7 +114,7 @@ create_project () {
   echo "details into the \"Add Hosted Project...\" dialog: "
   echo
   echo "      Address: ssh://$DAZZLE_USER@$DAZZLE_HOST:$PORT"
-  echo "  Remote Path: $DAZZLE_HOME/$1"
+  echo "  Remote Path: $DAZZLE_STORAGE/$1"
   echo
   echo "To link up (more) computers, use the \"dazzleDS link\" command."
   echo
