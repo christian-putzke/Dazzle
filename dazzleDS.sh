@@ -5,7 +5,7 @@
 # http://sam.zoy.org/wtfpl/COPYING for more details.
 # 
 # DazzleDS is based on the dazzle script from Sam Hocevar and was created
-# to work with a Synology NAS. DazzleDS was created by Christian Putzke.
+# to work with Synology NAS systems. DazzleDS was created by Christian Putzke.
 
 
 # Check if we're root, if not show a warning
@@ -45,24 +45,30 @@ show_help () {
 
 configure_ssh () {
   echo "  -> mkdir --parents $DAZZLE_HOME/.ssh"
+  sleep 1
   mkdir -p $DAZZLE_HOME/.ssh
 
   echo "  -> touch $DAZZLE_HOME/.ssh/authorized_keys"
+  sleep 1
   touch $DAZZLE_HOME/.ssh/authorized_keys
 
   echo "  -> chmod 700 $DAZZLE_HOME/.ssh"
+  sleep 1
   chmod 700 $DAZZLE_HOME/.ssh
 
   echo "  -> chmod 600 $DAZZLE_HOME/.ssh/authorized_keys"
+  sleep 1
   chmod 600 $DAZZLE_HOME/.ssh/authorized_keys
 
   echo "  -> chown -R $DAZZLE_USER:$DAZZLE_GROUP $DAZZLE_HOME/.ssh"
+  sleep 1
   chown -R $DAZZLE_USER:$DAZZLE_GROUP $DAZZLE_HOME/.ssh
 
   # Disable the password for the "storage" user to force authentication using a key
   CONFIG_CHECK=`grep "^# SparkleShare$" /etc/ssh/sshd_config`
   if ! [ "$CONFIG_CHECK" = "# SparkleShare" ]; then
-    echo "  -> Disable password authentication for the user $DAZZLE_USER to force authentication using a SSH-Key"
+    echo "  -> Disable SSH password authentication for the DSM user '$DAZZLE_USER' to force authentication using a SSH-Key"
+    sleep 1
     echo "" >> /etc/ssh/sshd_config
     echo "# SparkleShare" >> /etc/ssh/sshd_config
     echo "# Please do not edit the above comment as it's used as a check by Dazzle" >> /etc/ssh/sshd_config
@@ -135,12 +141,46 @@ link_client () {
 }
 
 check_requirements() {
+  echo -n "  -> Git package ... "
+  sleep 1
   if [[ $GIT == /dev/null ]]; then
-    echo "You have to install git from the DSM Package Manager at first!"
+    echo "not found!"
+    echo "     # -------------------------------------------------------------------- #"
+    echo "     # You have to install git server from the DSM Package Center at first! #"
+    echo "     # Please read the README file for further information.                 #"
+    echo "     # -------------------------------------------------------------------- #"
     exit 1;
   else
-    echo "  -> Git Package found!"
+    echo "found!"
   fi
+
+  USER_CHECK=`grep $DAZZLE_USER /etc/passwd | cut -c1-${#DAZZLE_USER}`
+  echo -n "  -> DSM User '$DAZZLE_USER' ... "
+  sleep 1
+  if [ "$USER_CHECK" != "$DAZZLE_USER" ]; then
+    echo "not found!"
+    echo "     # ----------------------------------------------------------- #"
+    echo "     # You have to create a DSM user called $DAZZLE_USER at first! #"
+    echo "     # Please read the README file for further information.        #"
+    echo "     # ----------------------------------------------------------- #"
+    exit 1;
+  else
+    echo "found!"
+  fi
+
+  echo -n "  -> Home directory ... "
+  sleep 1
+  if ! [ -d "$DAZZLE_STORAGE" ]; then
+    echo "not found!"
+    echo "     # --------------------------------------------------------- #"
+    echo "     # You have activate the DSM user home directories at first! #"
+    echo "     # Please read the README file for further information.      #"
+    echo "     # --------------------------------------------------------- #"
+    exit 1;
+  else
+    echo "found!"
+  fi
+
 }
 
 # Parse the command line arguments
@@ -148,10 +188,14 @@ case $1 in
   setup)
     echo " 1/2 | Checking requirements..."
     check_requirements
-    echo " 2/2 | Configuring account \"$DAZZLE_USER\"..."
+
+    sleep 1
+    echo " 2/2 | Configuring DSM user SSH \"$DAZZLE_USER\"..."
     configure_ssh
+
+    sleep 1
     echo
-    echo "Setup complete! Please restart your Synology Diskstation!"
+    echo "Setup complete! Please restart your Synology DiskStation!"
     echo "To create a new project, run \"dazzleDS create PROJECT_NAME\"."
     echo
     ;;
