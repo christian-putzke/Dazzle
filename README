@@ -1,10 +1,11 @@
-# Dazzle, SparkleShare host setup script
+# Dazzle and DazzleDS, SparkleShare host setup script
 
 An easier and less error prone way to set up a SparkleShare host.
-Created to work on Debian and Red Hat based systems.
+Dazzle was created to work on Debian and Red Hat based systems.
+DazzleDS was created to work on Synology NAS systems.
 
 
-## Usage
+## Dazzle Usage
 
 Usage (as root):
 
@@ -23,6 +24,42 @@ Usage (as root):
     dazzle create PROJECT_NAME
 
 
+## DazzleDS Preperation
+
+Before you can use DazzleDS with your Synology NAS you have to do some preperations within the DSM at first:
+
+    # Create a DSM user called "storage"
+    Control Panel -> User -> Create
+
+    # Activate the user home service
+    Control Panel -> User -> Advanded Tab -> Enable user home service
+    
+    # Install the Git Server Package from the DSM Package Center
+    Package center -> Utilities -> Git Server -> install
+
+    # Grant the DSM user "storage" the rights to use the git server
+    Git Server -> Check "allow access" for the storage user
+
+
+## DazzleDS Usage
+
+Usage (as root):
+
+    # Get Dazzle
+    curl https://raw.github.com/christian-putzke/Dazzle/master/dazzleDS.sh \
+        --output /usr/local/bin/dazzleDS
+    
+    # Initial Dazzle setup
+    chmod +x /usr/local/bin/dazzleDS
+    dazzleDS setup
+
+    # Link a SparkleShare client
+    dazzleDS link
+
+    # Create a new project
+    dazzleDS create PROJECT_NAME
+
+
 ## Configuration
 
 You can control almost all configuration options via environment variables:
@@ -36,3 +73,7 @@ Available options are the following:
 * DAZZLE_USER: the Dazzle user. Defaults to "storage".
 * DAZZLE_GROUP: the Dazzle group. Defaults to "storage".
 * DAZZLE_HOME: the directory used to store projects. Defaults to "/home/storage".
+
+The following options are additionaly and only available within DazzleDS
+* DAZZLE_STORAGE: the directory used to store projects. Defaults to "/home/storage".
+* DAZZLE_HOST: the host that is used within ssh link displayed after creating a project. Defaults to "/etc/hostname"
