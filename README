@@ -46,7 +46,7 @@ Before you can use DazzleDS with your Synology NAS you have to do some preperati
 Usage (as root):
 
     # Get DazzleDS
-    curl https://raw.github.com/christian-putzke/Dazzle/master/dazzleDS.sh \
+    curl https://raw.githubusercontent.com/christian-putzke/Dazzle/master/dazzleDS.sh \
         --output /usr/local/bin/dazzleDS
     
     # Initial DazzleDS setup
